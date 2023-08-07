@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {Triangle} from 'react-loader-spinner';
 import style from './Loader.module.css';
 
-export default class CustomLoader extends Component {
-  render() {
+const CustomLoader = () => {
+ 
     return (
       <div className={style.loader}>
       <Triangle
@@ -17,5 +17,7 @@ export default class CustomLoader extends Component {
             />
             </div>
     );
-  }
-}
+};
+
+export default CustomLoader;
+  

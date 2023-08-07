@@ -1,38 +1,32 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { FcSearch } from "react-icons/fc";
 import Notiflix from 'notiflix';
 import style from './Searchbar.module.css';
 import PropTypes from "prop-types";
 
-export default class Searchbar extends Component {
-  state = {
-    query: '',
+const Searchbar = ({ onSubmit }) => {
+const [ query, setQuery ] = useState('');
+
+
+ const handleChange = (e) => {
+    setQuery( e.target.value );
   };
 
-  handleChange = (e) => {
-    this.setState({ query: e.target.value });
-  };
-
-  handleSubmit = (e) => {
+ const handleSubmit = (e) => {
     e.preventDefault();
-    const { query } = this.state;
-    const { onSubmit } = this.props;
-    
+   
     if(query.trim() === '') {
       Notiflix.Notify.warning(`The search field is not filled !!!`)
       return;
     }
     onSubmit(query);
-    this.setState({ query: '' });
+    setQuery('');
 
   };
 
-  render() {
-    const { query } = this.state;
-
     return (
       <header className={style.searchbar}>
-        <form className={style.form} onSubmit={this.handleSubmit}>
+        <form className={style.form} onSubmit={handleSubmit}>
           <button type="submit" className={style.button}>
             <FcSearch size={30}/>
           </button>
@@ -41,7 +35,7 @@ export default class Searchbar extends Component {
             className={style.input}
             type="text"
             value={query}
-            onChange={this.handleChange}
+            onChange={handleChange}
             autoComplete="off"
             autoFocus
             placeholder='Search images and photos'
@@ -49,18 +43,11 @@ export default class Searchbar extends Component {
         </form>
       </header>
     );
-  }
-}
+  
+};
 
 Searchbar.propTypes = {
   onSubmit: PropTypes.func.isRequired,
 };
 
-
-
-
-
-
-
-
-
+export default Searchbar;

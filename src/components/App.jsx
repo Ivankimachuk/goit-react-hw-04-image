@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -8,41 +8,26 @@ import Modal from './Modal';
 import Triangle from './Loader/Loader';
 import receivingImages from './services/api';
 
+document.title = 'HMK-4 Image';
 const IMAGES_PER_PAGE = 12;
-document.title = 'HMK-3 iMAGE'
 
-class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    showModal: false,
-    modalImage: '',
-    modalOpen: false,
-    loading: false,
-  };
+const App = () => {
 
-  componentDidMount() {
-    this.receivingImages();
-  }
+const [ images, setImages ] = useState([]);
+const [ query, setQuery ] = useState('');
+const [ page, setPage ] = useState(1);
+const [ showModal, setShowModal ] = useState(false);
+const [ modalImage, setModalImage ] = useState('');
+const [modalOpen, setModalOpen] = useState(false);
+const [ loading, setLoading ] = useState(false);
 
-  componentDidUpdate() {
-    const { modalOpen } = this.state;
+useEffect(() => {
+  const  fetchImages = async () => {
 
-    if (modalOpen) {
-      document.body.classList.add('modal-open');
-    } else {
-      document.body.classList.remove('modal-open');
-    }
-  }
-    
+    if (!query)
+      return;
 
-  receivingImages = async () => {
-    const { query, page } = this.state;
-
-    if (!query) return;
-
-    this.setState({ loading: true });
+    setLoading(true);
 
     try {
       const newImages = await receivingImages(query, page);
@@ -51,39 +36,55 @@ class App extends Component {
         Notiflix.Notify.info('Nothing was found for this query!');
       }
 
-      this.setState((prevState) => ({
-        images: [...prevState.images, ...newImages],
-        loading: false,
-      }));
+      setImages((prevImages) => [...prevImages, ...newImages]);
+      setLoading(false);
+
     } catch (error) {
       console.error('Error fetching images:', error);
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
+  fetchImages();
+}, [ query, page ]);
 
-  handleSearchSubmit = (searchQuery) => {
-    this.setState({ query: searchQuery, page: 1, images: [] }, this.receivingImages);
+useEffect(() => {
+  if (modalOpen) {
+    document.body.classList.add('modal-open');
+  } else {
+    document.body.classList.remove('modal-open');
+  }
+  }, [modalOpen]);
+
+
+
+  const handleSearchSubmit = (searchQuery) => {
+    setQuery(searchQuery);
+    setPage(1);
+    setImages([]);
+  };
+    
+
+  const handleLoadMoreClick = () => {
+    setPage((prevPage) => prevPage + 1);
   };
 
-  handleLoadMoreClick = () => {
-    this.setState((prevState) => ({ page: prevState.page + 1 }), this.receivingImages);
+  const handleImageClick = (largeImageURL) => {
+    setModalImage(largeImageURL);
+    setShowModal(true);
+    setModalOpen(true);
   };
 
-  handleImageClick = (largeImageURL) => {
-    this.setState({ modalImage: largeImageURL, showModal: true, modalOpen: true });
+  const handleCloseModal = () => {
+    setModalImage('');
+    setShowModal(false);
+    setModalOpen(false);
   };
 
-  handleCloseModal = () => {
-    this.setState({ showModal: false, modalImage: '', modalOpen: false });
-  };
-
-  render() {
-    const { images, showModal, modalImage, loading } = this.state;
     const totalImages = images.length;
 
     return (
       <div className="App">
-        <Searchbar onSubmit={this.handleSearchSubmit} />
+        <Searchbar onSubmit={handleSearchSubmit} />
         
         <ImageGallery>
           {images.map((image) => (
@@ -91,22 +92,21 @@ class App extends Component {
               key={image.id}
               src={image.webformatURL}
               alt={`Pixabay image ${image.id}`}
-              onClick={() => this.handleImageClick(image.largeImageURL)}
+              onClick={() => handleImageClick(image.largeImageURL)}
             />
           ))}
         </ImageGallery>
 
         {totalImages > 0 && !loading && totalImages % IMAGES_PER_PAGE === 0 && (
-          <Button onClick={this.handleLoadMoreClick}>Load more</Button>
+          <Button onClick={handleLoadMoreClick}>Load more</Button>
         )}
 
-        {showModal && <Modal src={modalImage} alt="Large image" onClose={this.handleCloseModal} />}
+        {showModal && <Modal src={modalImage} alt="Large image" onClose={handleCloseModal} />}
 
         {totalImages === 0 && !showModal && loading && <Triangle />}
       </div>
     );
-  }
+  
 }
 
 export default App;
-

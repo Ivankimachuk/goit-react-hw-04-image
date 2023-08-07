@@ -1,18 +1,18 @@
-import React, { Component } from 'react';
+import React from 'react';
 import style from './ImageGalleryItem.module.css'
 import PropTypes from "prop-types";
 
-export default class ImageGalleryItem extends Component {
-  render() {
-    const { src, alt } = this.props;
-
+const ImageGalleryItem = ({ src, alt, onClick }) => {
+  
     return (
-      <li className={style.galleryItem} onClick={this.props.onClick}>
+      <li className={style.galleryItem} onClick={onClick}>
         <img className={style.ImageGalleryItemImage} src={src} alt={alt} />
       </li>
     );
-  }
+  
 };
+
+export default ImageGalleryItem;
 
 ImageGalleryItem.propTypes = {
   src: PropTypes.string.isRequired,
